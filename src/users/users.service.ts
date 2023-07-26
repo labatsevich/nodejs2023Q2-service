@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { DB } from 'src/storage/storage.service';
@@ -12,6 +16,9 @@ export class UsersService {
     const newUser = {
       ...createUserDto,
       id: uuidv4(),
+      version: 1,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
     } as User;
 
     this.storage.users.push(newUser);
@@ -33,10 +40,19 @@ export class UsersService {
   update(id: string, updateUserDto: UpdateUserDto) {
     const index = this.storage.users.findIndex((entry) => entry.id === id);
     if (index === -1) {
+      throw new NotFoundException('User not found');
     }
+
     const user = this.storage.users[index];
+
+    if (user.password !== updateUserDto.oldpassword) {
+      throw new ForbiddenException('Old password is wrong');
+    }
+
     if (user.password === updateUserDto.oldpassword) {
       user.password = updateUserDto.newpassword;
+      user.version++;
+      user.updatedAt = Date.now();
     }
     return user;
   }
