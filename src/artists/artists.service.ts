@@ -22,7 +22,7 @@ export class ArtistsService {
     return this.storage.artists;
   }
 
-  async findOne(artistId: string): Promise<Artist> {
+  findOne(artistId: string): Artist {
     const artist = this.storage.artists.find((entry) => entry.id === artistId);
     if (!artist) {
       throw new NotFoundException('Artist not found');

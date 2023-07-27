@@ -8,11 +8,11 @@ export class CreateTrackDto {
   @NotEquals(undefined, {
     message: "artistId can't be empty, must be a string or null",
   })
-  artistId?: string | null;
+  artistId: string | null;
   @NotEquals(undefined, {
     message: "albumId can't be empty, must be a string or null",
   })
-  albumId?: string | null;
+  albumId: string | null;
 
   @IsInt()
   @IsNotEmpty({ message: 'duration field is required ' })

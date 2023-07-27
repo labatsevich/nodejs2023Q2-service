@@ -7,5 +7,6 @@ import { StorageModule } from 'src/storage/storage.module';
   imports: [StorageModule],
   controllers: [ArtistsController],
   providers: [ArtistsService],
+  exports: [ArtistsService],
 })
 export class ArtistsModule {}
