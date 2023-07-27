@@ -7,6 +7,7 @@ import {
   Delete,
   ParseUUIDPipe,
   Put,
+  HttpCode,
 } from '@nestjs/common';
 import { TracksService } from './tracks.service';
 import { CreateTrackDto } from './dto/create-track.dto';
@@ -17,6 +18,7 @@ export class TracksController {
   constructor(private readonly tracksService: TracksService) {}
 
   @Post()
+  @HttpCode(201)
   create(@Body() createTrackDto: CreateTrackDto) {
     return this.tracksService.create(createTrackDto);
   }
@@ -40,6 +42,7 @@ export class TracksController {
   }
 
   @Delete(':id')
+  @HttpCode(204)
   remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     return this.tracksService.remove(id);
   }

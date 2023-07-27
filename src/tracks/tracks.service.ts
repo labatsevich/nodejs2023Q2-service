@@ -44,10 +44,14 @@ export class TracksService {
       const track = this.storage.tracks[index];
       Object.assign(track, { ...updateTrackDto });
       return track;
+    } else {
+      throw new NotFoundException('Track not found');
     }
   }
 
   remove(id: string) {
+    const track = this.storage.tracks.find((entry) => entry.id === id);
+    if (!track) throw new NotFoundException('Track not found');
     this.storage.tracks = this.storage.tracks.filter(
       (entry) => entry.id !== id,
     );
