@@ -8,11 +8,21 @@ export class DB {
   public artists: Array<Artist>;
   public tracks: Array<Track>;
   public albums: Array<Album>;
+  public favorites: {
+    artists: Array<string>;
+    albums: Array<string>;
+    tracks: Array<string>;
+  };
 
   constructor() {
     this.users = [];
     this.artists = [];
     this.tracks = [];
     this.albums = [];
+    this.favorites = {
+      artists: [],
+      albums: [],
+      tracks: [],
+    };
   }
 }
