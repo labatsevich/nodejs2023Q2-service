@@ -4,10 +4,12 @@ import { UpdateArtistDto } from './dto/update-artist.dto';
 import { Artist } from './entities/artist.entity';
 import { DB } from 'src/storage/storage.service';
 import { v4 as uuidv4 } from 'uuid';
+import { ArtistRemoveEvent } from './events/artist-remove.event';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class ArtistsService {
-  constructor(private storage: DB) {}
+  constructor(private storage: DB, private evenEmitter: EventEmitter2) {}
 
   create(createArtistDto: CreateArtistDto) {
     const newArtist = {
@@ -44,8 +46,21 @@ export class ArtistsService {
   }
 
   remove(artistId: string) {
-    this.storage.artists = this.storage.artists.filter(
-      (entry) => entry.id !== artistId,
-    );
+    if (this.isExists(artistId)) {
+      this.storage.artists = this.storage.artists.filter(
+        (entry) => entry.id !== artistId,
+      );
+
+      const removeEvent = new ArtistRemoveEvent();
+      removeEvent.name = `artist with id ${artistId} removed`;
+      removeEvent.id = artistId;
+      this.evenEmitter.emitAsync('artist.removed', removeEvent);
+    } else throw new NotFoundException('Artist not found');
+  }
+
+  private isExists(id: string): boolean {
+    const artist = this.storage.artists.find((entry) => entry.id === id);
+    if (artist) return true;
+    return false;
   }
 }
