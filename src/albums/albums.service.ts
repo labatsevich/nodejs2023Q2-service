@@ -9,11 +9,15 @@ import { UpdateAlbumDto } from './dto/update-album.dto';
 import { DB } from 'src/storage/storage.service';
 import { ArtistsService } from 'src/artists/artists.service';
 import { v4 as uuidv4 } from 'uuid';
+import { OnEvent } from '@nestjs/event-emitter';
+import { ArtistRemoveEvent } from 'src/artists/events/artist-remove.event';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class AlbumsService {
   public constructor(
     private storage: DB,
+    private eventEmmiter: EventEmitter2,
     @Inject(forwardRef(() => ArtistsService))
     private readonly artistsService: ArtistsService,
   ) {}
@@ -54,6 +58,7 @@ export class AlbumsService {
       this.storage.albums = this.storage.albums.filter(
         (entry) => entry.id !== id,
       );
+      this.eventEmmiter.emitAsync('album.removed');
     } else throw new NotFoundException('Album not found');
   }
 
@@ -61,5 +66,23 @@ export class AlbumsService {
     const album = this.storage.albums.find((entry) => entry.id === id);
     if (album) return true;
     return false;
+  }
+
+  @OnEvent('artist.removed')
+  async handleArtistRemoveEvent(event: ArtistRemoveEvent) {
+    const { id } = event;
+    const albums = await this.findAll();
+
+    albums.forEach((entry) => {
+      if (entry.artistId === id) {
+        const updateAlbumDto = {
+          id: entry.id,
+          name: entry.name,
+          year: entry.year,
+          artistId: null,
+        };
+        this.update(entry.id, updateAlbumDto);
+      }
+    });
   }
 }

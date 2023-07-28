@@ -12,15 +12,15 @@ export class FavoritesService {
     return `This action returns all favorites`;
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
     return `This action returns a #${id} favorite`;
   }
 
-  update(id: number, updateFavoriteDto: UpdateFavoriteDto) {
+  update(id: string, updateFavoriteDto: UpdateFavoriteDto) {
     return `This action updates a #${id} favorite`;
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} favorite`;
   }
 }
