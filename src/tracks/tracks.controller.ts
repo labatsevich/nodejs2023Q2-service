@@ -24,8 +24,9 @@ export class TracksController {
   }
 
   @Get()
-  findAll() {
-    return this.tracksService.findAll();
+  @HttpCode(200)
+  async findAll() {
+    return await this.tracksService.findAll();
   }
 
   @Get(':id')
@@ -34,6 +35,7 @@ export class TracksController {
   }
 
   @Put(':id')
+  @HttpCode(200)
   update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() updateTrackDto: UpdateTrackDto,
