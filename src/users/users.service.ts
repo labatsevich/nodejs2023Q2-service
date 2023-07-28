@@ -1,7 +1,9 @@
 import {
+  ClassSerializerInterceptor,
   ForbiddenException,
   Injectable,
   NotFoundException,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -12,23 +14,26 @@ import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 export class UsersService {
   constructor(private storage: DB) {}
-  create(createUserDto: CreateUserDto) {
-    const newUser = {
-      ...createUserDto,
-      id: uuidv4(),
-      version: 1,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    } as User;
+
+  @UseInterceptors(ClassSerializerInterceptor)
+  create(createUserDto: CreateUserDto): Partial<User> {
+    const newUser = new User({ ...createUserDto });
+    newUser.id = uuidv4();
+    newUser.version = 1;
+    newUser.createdAt = Date.now();
+    newUser.updatedAt = Date.now();
 
     this.storage.users.push(newUser);
+
     return newUser;
   }
 
+  @UseInterceptors(ClassSerializerInterceptor)
   findAll() {
     return this.storage.users;
   }
 
+  @UseInterceptors(ClassSerializerInterceptor)
   async findOne(id: string): Promise<User> {
     const user = this.storage.users.find((user) => user.id === id);
     if (!user) {
@@ -37,6 +42,7 @@ export class UsersService {
     return user;
   }
 
+  @UseInterceptors(ClassSerializerInterceptor)
   update(id: string, updateUserDto: UpdateUserDto) {
     const index = this.storage.users.findIndex((entry) => entry.id === id);
     if (index === -1) {
