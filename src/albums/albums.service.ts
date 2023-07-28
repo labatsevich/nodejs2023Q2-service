@@ -12,6 +12,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { OnEvent } from '@nestjs/event-emitter';
 import { ArtistRemoveEvent } from 'src/artists/events/artist-remove.event';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { AlbumRemoveEvent } from './events/album-remove.event';
 
 @Injectable()
 export class AlbumsService {
@@ -58,7 +59,10 @@ export class AlbumsService {
       this.storage.albums = this.storage.albums.filter(
         (entry) => entry.id !== id,
       );
-      this.eventEmmiter.emitAsync('album.removed');
+      this.eventEmmiter.emitAsync(
+        'album.removed',
+        new AlbumRemoveEvent(`album ${id} removed`, id),
+      );
     } else throw new NotFoundException('Album not found');
   }
 

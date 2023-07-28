@@ -13,6 +13,7 @@ import { ArtistsService } from 'src/artists/artists.service';
 import { AlbumsService } from 'src/albums/albums.service';
 import { OnEvent } from '@nestjs/event-emitter';
 import { ArtistRemoveEvent } from 'src/artists/events/artist-remove.event';
+import { AlbumRemoveEvent } from 'src/albums/events/album-remove.event';
 
 @Injectable()
 export class TracksService {
@@ -71,19 +72,20 @@ export class TracksService {
     );
   }
 
-  @OnEvent('artist.removed')
-  async handleArtistRemoveEvent(event: ArtistRemoveEvent) {
+  @OnEvent(['artist.removed', 'album.removed'])
+  async handleArtistRemoveEvent(event: ArtistRemoveEvent | AlbumRemoveEvent) {
     const { id } = event;
     const tracks = await this.findAll();
-
     tracks.forEach((entry) => {
       if (entry.artistId === id) {
         const updateTrackDto = {
           id: entry.id,
           name: entry.name,
-          year: entry.duration,
-          artistId: null,
+          artistId: event instanceof ArtistRemoveEvent ? null : entry.artistId,
+          albumId: event instanceof AlbumRemoveEvent ? null : entry.albumId,
+          duration: entry.duration,
         };
+
         this.update(entry.id, updateTrackDto);
       }
     });
