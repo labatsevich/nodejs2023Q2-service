@@ -29,19 +29,34 @@ export class TracksService {
   create(createTrackDto: CreateTrackDto) {
     const { artistId, albumId } = createTrackDto;
 
-    if (artistId.length && validate(artistId)) {
-      const artist = this.artistsService.findOne(createTrackDto.artistId);
+    if (
+      ((typeof artistId === 'string' && artistId.length !== 0) ||
+        artistId === null) &&
+      ((typeof albumId === 'string' && albumId.length !== 0) ||
+        albumId === null)
+    ) {
+      const artist = this.storage.artists.find(
+        ({ id }) => id === createTrackDto.artistId,
+      );
+
+      const album = this.storage.albums.find(
+        ({ id }) => id === createTrackDto.albumId,
+      );
+
       createTrackDto.artistId = artist ? artist.id : null;
-    } else throw new BadRequestException('artistId is invalid uuid');
-
-    if (albumId.length && validate(albumId)) {
-      const album = this.albumsService.findOne(albumId);
       createTrackDto.albumId = album ? album.id : null;
-    } else throw new BadRequestException('albumId is invalid uuid');
 
-    const newTrack = Object.assign({}, { ...createTrackDto }, { id: uuidv4() });
-    this.storage.tracks.push(newTrack);
-    return newTrack;
+      const newTrack = Object.assign(
+        {},
+        { ...createTrackDto },
+        { id: uuidv4() },
+      );
+      this.storage.tracks.push(newTrack);
+      return newTrack;
+    } else
+      throw new BadRequestException(
+        'check fields: artistId / albumId should not be empty, artistId / albumId must be a string or null',
+      );
   }
 
   async findAll() {
@@ -56,13 +71,38 @@ export class TracksService {
 
   update(id: string, updateTrackDto: UpdateTrackDto) {
     const index = this.storage.tracks.findIndex((entry) => entry.id === id);
-    if (index !== -1) {
-      const track = this.storage.tracks[index];
-      Object.assign(track, { ...updateTrackDto });
-      return track;
-    } else {
+
+    if (index === -1) {
       throw new NotFoundException('Track not found');
     }
+
+    const { artistId, albumId } = updateTrackDto;
+
+    if (
+      ((typeof artistId === 'string' && artistId.length !== 0) ||
+        artistId === null) &&
+      ((typeof albumId === 'string' && albumId.length !== 0) ||
+        albumId === null)
+    ) {
+      const track = this.storage.tracks[index];
+
+      const artist = this.storage.artists.find(
+        ({ id }) => id === updateTrackDto.artistId,
+      );
+
+      const album = this.storage.albums.find(
+        ({ id }) => id === updateTrackDto.albumId,
+      );
+
+      updateTrackDto.artistId = artist ? artist.id : null;
+      updateTrackDto.albumId = album ? album.id : null;
+
+      Object.assign(track, { ...updateTrackDto });
+      return track;
+    } else
+      throw new BadRequestException(
+        'check fields: artistId / albumId should not be empty, artistId / albumId must be a string or null',
+      );
   }
 
   remove(id: string) {
