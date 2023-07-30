@@ -11,7 +11,7 @@ import { DB } from 'src/storage/storage.service';
 import { v4 as uuidv4, validate } from 'uuid';
 import { ArtistsService } from 'src/artists/artists.service';
 import { AlbumsService } from 'src/albums/albums.service';
-import { OnEvent } from '@nestjs/event-emitter';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { ArtistRemoveEvent } from 'src/artists/events/artist-remove.event';
 import { AlbumRemoveEvent } from 'src/albums/events/album-remove.event';
 
@@ -23,6 +23,7 @@ export class TracksService {
     private readonly artistsService: ArtistsService,
     @Inject(forwardRef(() => AlbumsService))
     private readonly albumsService: AlbumsService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   create(createTrackDto: CreateTrackDto) {
@@ -70,10 +71,14 @@ export class TracksService {
     this.storage.tracks = this.storage.tracks.filter(
       (entry) => entry.id !== id,
     );
+    this.eventEmitter.emitAsync(
+      'track.removed',
+      new AlbumRemoveEvent(`track ${id} removed`, id),
+    );
   }
 
-  @OnEvent(['artist.removed', 'album.removed'])
-  async handleArtistRemoveEvent(event: ArtistRemoveEvent | AlbumRemoveEvent) {
+  @OnEvent('artist.removed')
+  async handleArtistRemoveEvent(event: ArtistRemoveEvent) {
     const { id } = event;
     const tracks = await this.findAll();
     tracks.forEach((entry) => {
@@ -81,8 +86,27 @@ export class TracksService {
         const updateTrackDto = {
           id: entry.id,
           name: entry.name,
-          artistId: event instanceof ArtistRemoveEvent ? null : entry.artistId,
-          albumId: event instanceof AlbumRemoveEvent ? null : entry.albumId,
+          artistId: null,
+          albumId: entry.albumId,
+          duration: entry.duration,
+        };
+
+        this.update(entry.id, updateTrackDto);
+      }
+    });
+  }
+
+  @OnEvent('album.removed')
+  async handleAlbumRemoveEvent(event: AlbumRemoveEvent) {
+    const { id } = event;
+    const tracks = await this.findAll();
+    tracks.forEach((entry) => {
+      if (entry.albumId === id) {
+        const updateTrackDto = {
+          id: entry.id,
+          name: entry.name,
+          artistId: entry.artistId,
+          albumId: null,
           duration: entry.duration,
         };
 
