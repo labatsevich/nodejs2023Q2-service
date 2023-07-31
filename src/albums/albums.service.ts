@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Inject,
   Injectable,
   NotFoundException,
@@ -24,15 +25,26 @@ export class AlbumsService {
   ) {}
 
   create(createAlbumDto: CreateAlbumDto) {
-    if (createAlbumDto.artistId.length !== 0) {
-      const artist = this.artistsService.findOne(createAlbumDto.artistId);
+    const { artistId } = createAlbumDto;
+
+    if (
+      (typeof artistId === 'string' && artistId.length !== 0) ||
+      artistId === null
+    ) {
+      const artist = this.storage.artists.find(({ id }) => id === artistId);
       createAlbumDto.artistId = artist ? artist.id : null;
-    }
 
-    const newAlbum = Object.assign({}, { ...createAlbumDto }, { id: uuidv4() });
-    this.storage.albums.push(newAlbum);
-
-    return newAlbum;
+      const newAlbum = Object.assign(
+        {},
+        { ...createAlbumDto },
+        { id: uuidv4() },
+      );
+      this.storage.albums.push(newAlbum);
+      return newAlbum;
+    } else
+      throw new BadRequestException(
+        'artistId should not be empty, artistId must be a string or null',
+      );
   }
 
   findAll() {
@@ -46,12 +58,25 @@ export class AlbumsService {
   }
 
   update(id: string, updateAlbumDto: UpdateAlbumDto) {
-    if (this.isExists(id)) {
-      const index = this.storage.albums.findIndex((entry) => entry.id === id);
-      const album = this.storage.albums[index];
-      Object.assign(album, { ...updateAlbumDto });
-      return album;
-    } else throw new NotFoundException('Album not found');
+    const { artistId } = updateAlbumDto;
+
+    if (
+      (typeof artistId === 'string' && artistId.length !== 0) ||
+      artistId === null
+    ) {
+      const artist = this.storage.artists.find(({ id }) => id === artistId);
+      updateAlbumDto.artistId = artist ? artist.id : null;
+
+      if (this.isExists(id)) {
+        const index = this.storage.albums.findIndex((entry) => entry.id === id);
+        const album = this.storage.albums[index];
+        Object.assign(album, { ...updateAlbumDto });
+        return album;
+      } else throw new NotFoundException('Album not found');
+    } else
+      throw new BadRequestException(
+        'artistId should not be empty, artistId must be a string or null',
+      );
   }
 
   remove(id: string) {
