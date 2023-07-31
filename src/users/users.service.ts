@@ -51,19 +51,22 @@ export class UsersService {
 
     const user = this.storage.users[index];
 
-    if (user.password !== updateUserDto.oldpassword) {
+    if (updateUserDto.oldpassword !== user.password) {
       throw new ForbiddenException('Old password is wrong');
     }
 
-    if (user.password === updateUserDto.oldpassword) {
-      user.password = updateUserDto.newpassword;
-      user.version++;
-      user.updatedAt = Date.now();
-    }
+    user.password = updateUserDto.newpassword;
+    user.version++;
+    user.updatedAt = Date.now();
+
     return user;
   }
 
   remove(id: string) {
+    const user = this.storage.users.find((user) => user.id === id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
     this.storage.users = this.storage.users.filter((entry) => entry.id !== id);
   }
 }
