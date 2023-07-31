@@ -44,21 +44,17 @@ export class UsersService {
 
   @UseInterceptors(ClassSerializerInterceptor)
   update(id: string, updateUserDto: UpdateUserDto) {
-    const index = this.storage.users.findIndex((entry) => entry.id === id);
+    const index = this.storage.users.findIndex((item) => item.id === id);
     if (index === -1) {
       throw new NotFoundException('User not found');
     }
-
     const user = this.storage.users[index];
-
-    if (updateUserDto.oldpassword !== user.password) {
+    if (updateUserDto.oldPassword !== user.password) {
       throw new ForbiddenException('Old password is wrong');
     }
-
-    user.password = updateUserDto.newpassword;
-    user.version++;
+    user.password = updateUserDto.newPassword;
+    user.version = user.version + 1;
     user.updatedAt = Date.now();
-
     return user;
   }
 

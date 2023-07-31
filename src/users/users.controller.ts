@@ -36,7 +36,6 @@ export class UsersController {
   }
 
   @Put(':id')
-  @HttpCode(200)
   update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() updateUserDto: UpdateUserDto,
