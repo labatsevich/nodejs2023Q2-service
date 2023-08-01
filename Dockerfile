@@ -4,8 +4,16 @@ WORKDIR /usr/service
 
 COPY ["package.json", "package-lock.json*", "./"]
 
+COPY . .
+
 RUN npm ci
 
+FROM node:18-alpine
+
 EXPOSE 4000
+
+WORKDIR /usr/service
+
+COPY --from=build-stage /usr/service .
 
 CMD [ "npm", "run", "start" ]
