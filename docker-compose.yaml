@@ -2,7 +2,7 @@ version: '1.0.0'
 
 services:
   app:
-    image: lye-hsl-app
+    image: hls-app
     build: .
     depends_on:
       - db
@@ -15,7 +15,7 @@ services:
        - net  
       
   db:
-    image: lye-hsl-db
+    image: hls-db
     build: ./database
     restart: on-failure:5
     ports:
