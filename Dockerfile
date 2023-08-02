@@ -10,7 +10,7 @@ RUN npm ci
 
 FROM node:18-alpine
 
-EXPOSE 4000
+EXPOSE ${PORT}
 
 WORKDIR /usr/service
 
