@@ -16,4 +16,4 @@ WORKDIR /usr/service
 
 COPY --from=build-stage /usr/service .
 
-CMD [ "npm", "run", "start" ]
+CMD ["npm", "run", "start:dev"]
