@@ -1,68 +1,71 @@
 import {
   ClassSerializerInterceptor,
-  ForbiddenException,
   Injectable,
   NotFoundException,
   UseInterceptors,
 } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { DB } from 'src/storage/storage.service';
 import { User } from './entities/user.entity';
 import { v4 as uuidv4 } from 'uuid';
+import { Prisma } from '@prisma/client';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private storage: DB) {}
+  constructor(private storage: DB, private prisma: PrismaService) {}
 
   @UseInterceptors(ClassSerializerInterceptor)
-  create(createUserDto: CreateUserDto): Partial<User> {
-    const newUser = new User({ ...createUserDto });
-    newUser.id = uuidv4();
-    newUser.version = 1;
-    newUser.createdAt = Date.now();
-    newUser.updatedAt = Date.now();
-
-    this.storage.users.push(newUser);
-
-    return newUser;
+  async create(data: Prisma.UserCreateInput) {
+    data.version = 1;
+    const user = await this.prisma.user.create({ data });
+    return user;
   }
 
   @UseInterceptors(ClassSerializerInterceptor)
   findAll() {
-    return this.storage.users;
+    return this.prisma.user.findMany();
   }
 
   @UseInterceptors(ClassSerializerInterceptor)
   async findOne(id: string): Promise<User> {
-    const user = this.storage.users.find((user) => user.id === id);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    return user;
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: {
+        id,
+      },
+    });
+
+    return {
+      ...user,
+      createdAt: user.createdAt.getTime(),
+      updatedAt: user.updatedAt.getTime(),
+    };
   }
 
   @UseInterceptors(ClassSerializerInterceptor)
   update(id: string, updateUserDto: UpdateUserDto) {
-    const index = this.storage.users.findIndex((item) => item.id === id);
-    if (index === -1) {
+    const user = this.prisma.user.findUnique({
+      where: {
+        id,
+      },
+    });
+    if (!user) {
       throw new NotFoundException('User not found');
     }
-    const user = this.storage.users[index];
-    if (updateUserDto.oldPassword !== user.password) {
-      throw new ForbiddenException('Old password is wrong');
-    }
-    user.password = updateUserDto.newPassword;
-    user.version = user.version + 1;
-    user.updatedAt = Date.now();
+
     return user;
   }
 
   remove(id: string) {
-    const user = this.storage.users.find((user) => user.id === id);
-    if (!user) {
-      throw new NotFoundException('User not found');
+    try {
+      this.prisma.user.delete({
+        where: {
+          id,
+        },
+      });
+      return true;
+    } catch {
+      return false;
     }
-    this.storage.users = this.storage.users.filter((entry) => entry.id !== id);
   }
 }

@@ -8,6 +8,7 @@ import { TracksModule } from './tracks/tracks.module';
 import { AlbumsModule } from './albums/albums.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     AlbumsModule,
     FavoritesModule,
     EventEmitterModule.forRoot(),
+    PrismaModule,
   ],
   controllers: [AppController],
   providers: [AppService],
