@@ -1,23 +1,11 @@
 version: '3'
 
 services:
-  app:
-    image: hls-app
-    build: .
-    depends_on:
-      - db
-    ports:
-      - ${PORT}:${PORT}  
-    restart: on-failure:5
-    volumes:
-      - ./src:/usr/service/src  
-    networks:
-       - net  
-      
-  db:
+
+  postgres:
     image: hls-db
     build: ./database
-    restart: on-failure:5
+    restart: always
     ports:
       - ${POSTGRES_PORT}:${POSTGRES_PORT}
     environment:
@@ -26,14 +14,26 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - postgres_logs:/var/lib/postgresql/logs
     networks:
-      - net  
+      - postgres  
 
+  app:
+    image: hls-app
+    build: .
+    depends_on:
+      - db
+    ports:
+      - ${PORT}:${PORT}  
+    restart: always
+    volumes:
+      - ./src:/usr/service/src  
+    networks:
+       - postgres  
+    
 volumes:
   postgres_data:
   postgres_logs:   
 
 networks:
-  net: 
+  postgres: 
     driver: bridge
