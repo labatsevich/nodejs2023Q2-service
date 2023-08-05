@@ -8,6 +8,8 @@ import {
   HttpCode,
   ParseUUIDPipe,
   Put,
+  UseInterceptors,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -18,6 +20,7 @@ export class UsersController {
 
   @Post()
   @HttpCode(201)
+  @UseInterceptors(ClassSerializerInterceptor)
   async create(@Body() createUserDto) {
     return await this.usersService.create(createUserDto);
   }
@@ -30,21 +33,26 @@ export class UsersController {
 
   @Get(':id')
   @HttpCode(200)
+  @UseInterceptors(ClassSerializerInterceptor)
   async findOne(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     return this.usersService.findOne(id);
   }
 
   @Put(':id')
-  update(
+  @UseInterceptors(ClassSerializerInterceptor)
+  async update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    return this.usersService.update(id, updateUserDto);
+    return await this.usersService.update({
+      where: { id: String(id) },
+      data: updateUserDto,
+    });
   }
 
   @Delete(':id')
   @HttpCode(204)
-  remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
-    return this.usersService.remove(id);
+  async remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+    return await this.usersService.remove({ id });
   }
 }
