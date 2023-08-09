@@ -30,7 +30,9 @@ export class UsersService {
   }
 
   async findAll() {
-    return await this.prisma.user.findMany();
+    return (await this.prisma.user.findMany()).map((entry) =>
+      this.convert(entry),
+    );
   }
 
   async findOne(id: string): Promise<User | null> {
