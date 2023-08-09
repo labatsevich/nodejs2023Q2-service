@@ -9,109 +9,72 @@ import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 import { DB } from 'src/storage/storage.service';
 import { ArtistsService } from 'src/artists/artists.service';
-import { v4 as uuidv4 } from 'uuid';
-import { OnEvent } from '@nestjs/event-emitter';
-import { ArtistRemoveEvent } from 'src/artists/events/artist-remove.event';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { AlbumRemoveEvent } from './events/album-remove.event';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class AlbumsService {
   public constructor(
     private storage: DB,
-    private eventEmmiter: EventEmitter2,
+    private prisma: PrismaService,
     @Inject(forwardRef(() => ArtistsService))
     private readonly artistsService: ArtistsService,
   ) {}
 
-  create(createAlbumDto: CreateAlbumDto) {
-    const { artistId } = createAlbumDto;
+  async create(data: CreateAlbumDto) {
+    const { artistId } = data;
 
     if (
       (typeof artistId === 'string' && artistId.length !== 0) ||
       artistId === null
     ) {
-      const artist = this.storage.artists.find(({ id }) => id === artistId);
-      createAlbumDto.artistId = artist ? artist.id : null;
-
-      const newAlbum = Object.assign(
-        {},
-        { ...createAlbumDto },
-        { id: uuidv4() },
-      );
-      this.storage.albums.push(newAlbum);
-      return newAlbum;
+      return await this.prisma.album.create({ data });
     } else
       throw new BadRequestException(
         'artistId should not be empty, artistId must be a string or null',
       );
   }
 
-  findAll() {
-    return this.storage.albums;
+  async findAll() {
+    return await this.prisma.album.findMany();
   }
 
-  findOne(id: string) {
-    const album = this.storage.albums.find((entry) => entry.id === id);
+  async findOne({ id }: Prisma.AlbumWhereUniqueInput) {
+    const album = await this.prisma.album.findUnique({
+      where: { id },
+    });
     if (!album) throw new NotFoundException('Album not found');
     return album;
   }
 
-  update(id: string, updateAlbumDto: UpdateAlbumDto) {
-    const { artistId } = updateAlbumDto;
+  async update({ id }: Prisma.AlbumWhereUniqueInput, data: UpdateAlbumDto) {
+    const { artistId } = data;
 
     if (
       (typeof artistId === 'string' && artistId.length !== 0) ||
       artistId === null
     ) {
-      const artist = this.storage.artists.find(({ id }) => id === artistId);
-      updateAlbumDto.artistId = artist ? artist.id : null;
+      try {
+        const album = await this.prisma.album.update({
+          where: { id },
+          data,
+        });
 
-      if (this.isExists(id)) {
-        const index = this.storage.albums.findIndex((entry) => entry.id === id);
-        const album = this.storage.albums[index];
-        Object.assign(album, { ...updateAlbumDto });
         return album;
-      } else throw new NotFoundException('Album not found');
+      } catch {
+        throw new NotFoundException('Albun not found');
+      }
     } else
       throw new BadRequestException(
         'artistId should not be empty, artistId must be a string or null',
       );
   }
 
-  remove(id: string) {
-    if (this.isExists(id)) {
-      this.storage.albums = this.storage.albums.filter(
-        (entry) => entry.id !== id,
-      );
-      this.eventEmmiter.emitAsync(
-        'album.removed',
-        new AlbumRemoveEvent(`album ${id} removed`, id),
-      );
-    } else throw new NotFoundException('Album not found');
-  }
-
-  private isExists(id: string): boolean {
-    const album = this.storage.albums.find((entry) => entry.id === id);
-    if (album) return true;
-    return false;
-  }
-
-  @OnEvent('artist.removed')
-  async handleArtistRemoveEvent(event: ArtistRemoveEvent) {
-    const { id } = event;
-    const albums = await this.findAll();
-
-    albums.forEach((entry) => {
-      if (entry.artistId === id) {
-        const updateAlbumDto = {
-          id: entry.id,
-          name: entry.name,
-          year: entry.year,
-          artistId: null,
-        };
-        this.update(entry.id, updateAlbumDto);
-      }
-    });
+  async remove({ id }: Prisma.AlbumWhereUniqueInput) {
+    try {
+      await this.prisma.album.delete({ where: { id } });
+    } catch {
+      throw new NotFoundException('Album not found');
+    }
   }
 }
