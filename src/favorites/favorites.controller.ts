@@ -19,35 +19,52 @@ export class FavoritesController {
   }
 
   @Post('/track/:id')
-  addTrack(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
-    return this.favoritesService.addTrack(id);
+  async addTrack(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+    return await this.favoritesService.addTrack({
+      entries: 'track',
+      itemId: id,
+    });
   }
 
   @Delete('/track/:id')
   @HttpCode(204)
-  removeTrack(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
-    this.favoritesService.deleteTrack(id);
+  async removeTrack(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ) {
+    this.favoritesService.delete({ itemId: id });
   }
 
   @Post('/album/:id')
-  addAlbum(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
-    return this.favoritesService.addAlbum(id);
+  async addAlbum(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+    return this.favoritesService.addAlbum({
+      entries: 'album',
+      itemId: id,
+    });
   }
 
   @Delete('/album/:id')
   @HttpCode(204)
-  removeAlbum(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
-    this.favoritesService.deleteAlbum(id);
+  async removeAlbum(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ) {
+    this.favoritesService.delete({ itemId: id });
   }
 
   @Post('/artist/:id')
-  addArtist(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
-    return this.favoritesService.addArtist(id);
+  async addArtist(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ) {
+    return this.favoritesService.addArtist({
+      entries: 'artist',
+      itemId: id,
+    });
   }
 
   @Delete('/artist/:id')
   @HttpCode(204)
-  removeArtist(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
-    this.favoritesService.deleteArtist(id);
+  async removeArtist(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ) {
+    this.favoritesService.delete({ itemId: id });
   }
 }
