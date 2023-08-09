@@ -7,18 +7,18 @@ import {
 } from '@nestjs/common';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
-import { DB } from 'src/storage/storage.service';
-import { v4 as uuidv4 } from 'uuid';
 import { ArtistsService } from 'src/artists/artists.service';
 import { AlbumsService } from 'src/albums/albums.service';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { ArtistRemoveEvent } from 'src/artists/events/artist-remove.event';
 import { AlbumRemoveEvent } from 'src/albums/events/album-remove.event';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class TracksService {
   public constructor(
-    private storage: DB,
+    private prisma: PrismaService,
     @Inject(forwardRef(() => ArtistsService))
     private readonly artistsService: ArtistsService,
     @Inject(forwardRef(() => AlbumsService))
@@ -26,8 +26,8 @@ export class TracksService {
     private eventEmitter: EventEmitter2,
   ) {}
 
-  create(createTrackDto: CreateTrackDto) {
-    const { artistId, albumId } = createTrackDto;
+  async create(data: CreateTrackDto) {
+    const { artistId, albumId } = data;
 
     if (
       ((typeof artistId === 'string' && artistId.length !== 0) ||
@@ -35,24 +35,9 @@ export class TracksService {
       ((typeof albumId === 'string' && albumId.length !== 0) ||
         albumId === null)
     ) {
-      const artist = this.storage.artists.find(
-        ({ id }) => id === createTrackDto.artistId,
-      );
-
-      const album = this.storage.albums.find(
-        ({ id }) => id === createTrackDto.albumId,
-      );
-
-      createTrackDto.artistId = artist ? artist.id : null;
-      createTrackDto.albumId = album ? album.id : null;
-
-      const newTrack = Object.assign(
-        {},
-        { ...createTrackDto },
-        { id: uuidv4() },
-      );
-      this.storage.tracks.push(newTrack);
-      return newTrack;
+      return await this.prisma.track.create({
+        data,
+      });
     } else
       throw new BadRequestException(
         'check fields: artistId / albumId should not be empty, artistId / albumId must be a string or null',
@@ -60,23 +45,27 @@ export class TracksService {
   }
 
   async findAll() {
-    return this.storage.tracks;
+    return this.prisma.track.findMany();
   }
 
-  findOne(id: string) {
-    const track = this.storage.tracks.find((entry) => entry.id === id);
+  async findOne({ id }: Prisma.TrackWhereUniqueInput) {
+    const track = await this.prisma.track.findUnique({
+      where: { id },
+    });
+
     if (!track) throw new NotFoundException('Track not found');
+
     return track;
   }
 
-  update(id: string, updateTrackDto: UpdateTrackDto) {
-    const index = this.storage.tracks.findIndex((entry) => entry.id === id);
+  async update({ id }: Prisma.TrackWhereUniqueInput, data: UpdateTrackDto) {
+    const track = await this.findOne({ id });
 
-    if (index === -1) {
+    if (!track) {
       throw new NotFoundException('Track not found');
     }
 
-    const { artistId, albumId } = updateTrackDto;
+    const { artistId, albumId } = data;
 
     if (
       ((typeof artistId === 'string' && artistId.length !== 0) ||
@@ -84,20 +73,10 @@ export class TracksService {
       ((typeof albumId === 'string' && albumId.length !== 0) ||
         albumId === null)
     ) {
-      const track = this.storage.tracks[index];
-
-      const artist = this.storage.artists.find(
-        ({ id }) => id === updateTrackDto.artistId,
-      );
-
-      const album = this.storage.albums.find(
-        ({ id }) => id === updateTrackDto.albumId,
-      );
-
-      updateTrackDto.artistId = artist ? artist.id : null;
-      updateTrackDto.albumId = album ? album.id : null;
-
-      Object.assign(track, { ...updateTrackDto });
+      const track = await this.prisma.track.update({
+        where: { id },
+        data,
+      });
       return track;
     } else
       throw new BadRequestException(
@@ -105,16 +84,20 @@ export class TracksService {
       );
   }
 
-  remove(id: string) {
-    const track = this.storage.tracks.find((entry) => entry.id === id);
-    if (!track) throw new NotFoundException('Track not found');
-    this.storage.tracks = this.storage.tracks.filter(
-      (entry) => entry.id !== id,
-    );
-    this.eventEmitter.emitAsync(
-      'track.removed',
-      new AlbumRemoveEvent(`track ${id} removed`, id),
-    );
+  async remove({ id }: Prisma.TrackWhereUniqueInput) {
+    try {
+      await this.prisma.track.delete({
+        where: { id },
+      });
+
+      this.eventEmitter.emitAsync(
+        'track.removed',
+        new AlbumRemoveEvent(`track ${id} removed`, id),
+      );
+      return;
+    } catch {
+      throw new NotFoundException('Track not found');
+    }
   }
 
   @OnEvent('artist.removed')
@@ -131,7 +114,7 @@ export class TracksService {
           duration: entry.duration,
         };
 
-        this.update(entry.id, updateTrackDto);
+        this.update({ id }, updateTrackDto);
       }
     });
   }
@@ -150,7 +133,7 @@ export class TracksService {
           duration: entry.duration,
         };
 
-        this.update(entry.id, updateTrackDto);
+        this.update({ id }, updateTrackDto);
       }
     });
   }

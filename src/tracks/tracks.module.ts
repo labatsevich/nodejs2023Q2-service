@@ -4,6 +4,7 @@ import { TracksController } from './tracks.controller';
 import { StorageModule } from 'src/storage/storage.module';
 import { ArtistsModule } from 'src/artists/artists.module';
 import { AlbumsModule } from 'src/albums/albums.module';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Module({
   imports: [
@@ -12,7 +13,7 @@ import { AlbumsModule } from 'src/albums/albums.module';
     forwardRef(() => AlbumsModule),
   ],
   controllers: [TracksController],
-  providers: [TracksService],
+  providers: [TracksService, PrismaService],
   exports: [TracksService],
 })
 export class TracksModule {}
