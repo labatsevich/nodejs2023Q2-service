@@ -6,61 +6,59 @@ import { DB } from 'src/storage/storage.service';
 import { v4 as uuidv4 } from 'uuid';
 import { ArtistRemoveEvent } from './events/artist-remove.event';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ArtistsService {
-  constructor(private storage: DB, private evenEmitter: EventEmitter2) {}
+  constructor(
+    private storage: DB,
+    private prisma: PrismaService,
+    private evenEmitter: EventEmitter2,
+  ) {}
 
-  create(createArtistDto: CreateArtistDto) {
-    const newArtist = {
-      ...createArtistDto,
-      id: uuidv4(),
-    };
-    this.storage.artists.push(newArtist);
-    return newArtist;
+  async create(data: CreateArtistDto) {
+    const artist = await this.prisma.artist.create({ data });
+    return artist;
   }
 
-  findAll() {
-    return this.storage.artists;
+  async findAll() {
+    return await this.prisma.artist.findMany();
   }
 
-  findOne(artistId: string): Artist {
-    const artist = this.storage.artists.find((entry) => entry.id === artistId);
+  async findOne({ id }: Prisma.ArtistWhereUniqueInput): Promise<Artist | null> {
+    const artist = await this.prisma.artist.findUnique({
+      where: { id },
+    });
+
     if (!artist) {
       throw new NotFoundException('Artist not found');
     }
     return artist;
   }
 
-  update(artistId: string, updateArtistDto: UpdateArtistDto) {
-    const index = this.storage.artists.findIndex(
-      (entry) => entry.id === artistId,
-    );
-
-    if (index === -1) throw new NotFoundException('Artist not found');
-
-    const artist = this.storage.artists[index];
-    artist.grammy = updateArtistDto.grammy;
-    artist.name = updateArtistDto.name;
-    return artist;
+  async update({ id }: Prisma.ArtistWhereUniqueInput, data: UpdateArtistDto) {
+    try {
+      const artist = await this.prisma.artist.update({
+        where: { id },
+        data,
+      });
+      return artist;
+    } catch {
+      throw new NotFoundException('Artist not found');
+    }
   }
 
-  remove(artistId: string) {
-    if (this.isExists(artistId)) {
-      this.storage.artists = this.storage.artists.filter(
-        (entry) => entry.id !== artistId,
-      );
-
-      const removeEvent = new ArtistRemoveEvent();
-      removeEvent.name = `artist with id ${artistId} removed`;
-      removeEvent.id = artistId;
-      this.evenEmitter.emitAsync('artist.removed', removeEvent);
-    } else throw new NotFoundException('Artist not found');
-  }
-
-  private isExists(id: string): boolean {
-    const artist = this.storage.artists.find((entry) => entry.id === id);
-    if (artist) return true;
-    return false;
+  async remove({ id }: Prisma.ArtistWhereUniqueInput) {
+    try {
+      await this.prisma.artist.delete({
+        where: {
+          id,
+        },
+      });
+      return;
+    } catch {
+      throw new NotFoundException('Artist not found');
+    }
   }
 }
