@@ -26,24 +26,26 @@ rename .env.example to .env
 ## Build images
 
 ```
-run npm run docker:build
+npm run docker:build
 ```
 
-## Start container
+## Starting container
 
 This command starts one by one command docker-compose up, npx prisma migrate dev --name init & nest start --watch
 
 ```
-run npm run docker:up
+npm run docker:up
 ```
-
 After starting the app on port (4000 as default) you can open
 in your browser OpenAPI documentation by typing http://localhost:4000/doc/.
+
+## Running vulnerabilities scanning
+
+npm run scan:app
+npm run scan:db
 ## Testing
 
 After application running open new terminal and enter:
-
-To run all tests without authorization
 
 ```
 npm run test
