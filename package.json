@@ -9,6 +9,7 @@
     "prebuild": "rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "docker:build": "docker-compose build",
     "docker:up": "docker-compose up",
     "scan:app": "docker scan hls-app",
     "scan:db": "docker scan hls-db",
