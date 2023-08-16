@@ -14,6 +14,11 @@ For those who will being check my work! Please change
         depends-on:
         -postgres.
 
+**docker-compose.yaml should look like this**
+
+![docker-compose](https://github.com/labatsevich/nodejs2023Q2-service/assets/87633079/21984e67-c525-4b9e-bab8-0cb18eeb023c)
+
+
 Command (docker scan) won't work if you are using latest docker ver. My docker version is 4.4 and this command works well. Sorry for this!  
 
 I forgotten to do it myself. Thanks for understanding!
