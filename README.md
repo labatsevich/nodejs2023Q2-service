@@ -5,7 +5,7 @@
 - Git - [Download & Install Git](https://git-scm.com/downloads).
 - Node.js - [Download & Install Node.js](https://nodejs.org/en/download/) and the npm package manager.
 
-## Warning, Achtung !
+## Warning, Achtung
 
 For those who will being check my work! Please change
     depends_on:
@@ -13,6 +13,8 @@ For those who will being check my work! Please change
         to  
         depends-on:
         -postgres.
+
+Command (docker scan) won't work if you are using latest docker ver. My docker version is 4.4 and this command works well. Sorry for this!  
 
 I forgotten to do it myself. Thanks for understanding!
 
