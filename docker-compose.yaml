@@ -15,26 +15,28 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - postgres_logs:/var/lib/postgresql/logs
+    expose:
+       - 5432
     networks:
-      - postgres  
+      - mynetwork  
 
   app:
     image: hls-app
     build: .
     depends_on:
-      - db
+      - postgres
     ports:
       - ${PORT}:${PORT}  
     restart: always
     volumes:
       - ./src:/usr/service/src  
     networks:
-       - postgres  
+       - mynetwork  
     
 volumes:
   postgres_data:
   postgres_logs:   
 
 networks:
-  postgres: 
+  mynetwork: 
     driver: bridge
