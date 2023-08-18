@@ -3,10 +3,9 @@ import { appendFileSync } from 'fs';
 import { join } from 'path';
 
 @Injectable()
-export class CustomLoggerService extends ConsoleLogger {
-  constructor(context: string) {
-    super(context);
-    this.setContext(context);
+export class CustomLogger extends ConsoleLogger {
+  constructor() {
+    super();
   }
 
   error(message: any, stack?: string, context?: string): void {
