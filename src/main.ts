@@ -6,7 +6,7 @@ import { join } from 'path';
 import { SwaggerModule } from '@nestjs/swagger';
 import { readFile } from 'fs/promises';
 import { parse } from 'yaml';
-import { CustomLoggerService } from './logger/custom-logger.service';
+import { CustomLogger } from './logger/custom-logger.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -16,7 +16,8 @@ async function bootstrap() {
   const document = await readFile(join(__dirname, '../doc/api.yaml'), 'utf-8');
   SwaggerModule.setup('doc', app, parse(document));
 
-  app.useLogger(new CustomLoggerService('App'));
+  app.enableCors();
+  app.useLogger(app.get(CustomLogger));
 
   await app.listen(process.env.PORT);
 }

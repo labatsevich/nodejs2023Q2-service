@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
@@ -9,10 +9,14 @@ import { AlbumsModule } from './albums/albums.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { PrismaModule } from './prisma/prisma.module';
-import { CustomLoggerModule } from './logger/custom-logger.module';
+import { LoggerModule } from './logger/custom-logger.module';
+import { APP_FILTER } from '@nestjs/core';
+import { CustomExceptionFilter } from './common/filters/custom-exception.filter';
+import { LoggerMiddleware } from './common/middleware/logger.middleware';
 
 @Module({
   imports: [
+    LoggerModule,
     UsersModule,
     StorageModule,
     ArtistsModule,
@@ -21,9 +25,18 @@ import { CustomLoggerModule } from './logger/custom-logger.module';
     FavoritesModule,
     EventEmitterModule.forRoot(),
     PrismaModule,
-    CustomLoggerModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: CustomExceptionFilter,
+    },
+    AppService,
+  ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}
