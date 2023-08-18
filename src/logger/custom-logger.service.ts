@@ -1,22 +1,40 @@
-import { LogLevel, LoggerService } from '@nestjs/common';
+import { ConsoleLogger, Injectable, LogLevel } from '@nestjs/common';
+import { appendFileSync } from 'fs';
+import { join } from 'path';
 
-class CustomLoggerService implements LoggerService {
-  log(message: any, ...optionalParams: any[]) {
-    throw new Error('Method not implemented.');
+@Injectable()
+export class CustomLoggerService extends ConsoleLogger {
+  constructor(context: string) {
+    super(context);
+    this.setContext(context);
   }
-  error(message: any, ...optionalParams: any[]) {
-    throw new Error('Method not implemented.');
+
+  error(message: any, stack?: string, context?: string): void {
+    super.error(message, stack, context);
+    this.write('error', message);
   }
-  warn(message: any, ...optionalParams: any[]) {
-    throw new Error('Method not implemented.');
+
+  warn(message: any, context?: string): void {
+    super.warn(message, context);
+    this.write('warn', message);
   }
-  debug?(message: any, ...optionalParams: any[]) {
-    throw new Error('Method not implemented.');
+
+  log(message: any, context?: string): void {
+    super.log(message, context);
+    this.write('log', message);
   }
-  verbose?(message: any, ...optionalParams: any[]) {
-    throw new Error('Method not implemented.');
+
+  verbose(message: any, context?: string): void {
+    super.verbose(message, context);
+    this.write('verbose', message);
   }
-  setLogLevels?(levels: LogLevel[]) {
-    throw new Error('Method not implemented.');
+
+  debug(message: any, context?: string): void {
+    super.debug(message, context);
+    this.write('debug', context);
+  }
+
+  private write(level: LogLevel, message: string) {
+    appendFileSync(join(process.cwd(), 'logs.log'), `${level} ${message}`);
   }
 }

@@ -9,6 +9,7 @@ import { AlbumsModule } from './albums/albums.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { PrismaModule } from './prisma/prisma.module';
+import { CustomLoggerModule } from './logger/custom-logger.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { PrismaModule } from './prisma/prisma.module';
     FavoritesModule,
     EventEmitterModule.forRoot(),
     PrismaModule,
+    CustomLoggerModule,
   ],
   controllers: [AppController],
   providers: [AppService],
