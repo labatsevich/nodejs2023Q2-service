@@ -11,19 +11,21 @@ export class LoggerMiddleware implements NestMiddleware {
     res.on('finish', () => {
       const { statusCode } = res;
 
-      const message = `Method: ${method}, url:${baseUrl}, query: ${JSON.stringify(
+      const message = `Status code: ${statusCode}, method: ${method}, url:${baseUrl}, query: ${JSON.stringify(
         query,
       )}, body: ${JSON.stringify(body)}`;
 
-      if (statusCode >= 400) {
+      /*if (statusCode >= 400) {
         return this.logger.warn(message, 'HTTP');
       }
 
       if (statusCode >= 500) {
         return this.logger.error(message, 'no-trace', 'HTTP');
-      }
+      }*/
 
-      return this.logger.log(message);
+      if (res.statusCode < 400) {
+        return this.logger.log(message);
+      }
     });
 
     next();
