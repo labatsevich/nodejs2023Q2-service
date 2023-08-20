@@ -1,0 +1,40 @@
+version: '4.4.4'
+
+services:
+
+  postgres:
+    image: hls-db
+    build: ./database
+    restart: always
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - postgres_logs:/var/lib/postgresql/logs
+    networks:
+      - postgres  
+
+  app:
+    image: hls-app
+    build: .
+    depends_on:
+      - db
+    ports:
+      - ${PORT}:${PORT}  
+    restart: always
+    volumes:
+      - ./src:/usr/service/src  
+    networks:
+       - postgres  
+    
+volumes:
+  postgres_data:
+  postgres_logs:   
+
+networks:
+  postgres: 
+    driver: bridge
