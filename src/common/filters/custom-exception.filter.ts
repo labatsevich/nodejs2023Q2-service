@@ -20,7 +20,7 @@ export class CustomExceptionFilter implements ExceptionFilter {
     const context = host.switchToHttp();
     const req = context.getRequest<Request>();
 
-    const { method, body, query, originalUrl } = req;
+    const { statusCode, method, body, query, originalUrl } = req;
 
     const httpStatus =
       exception instanceof HttpException
@@ -41,7 +41,7 @@ export class CustomExceptionFilter implements ExceptionFilter {
 
     httpAdapter.reply(context.getResponse(), responseBody, httpStatus);
 
-    const errorLog = `Method: ${method}, url: ${originalUrl}, query: ${query}, body: ${JSON.stringify(
+    const errorLog = `Status code: ${statusCode},Method: ${method}, url: ${originalUrl}, query: ${query}, body: ${JSON.stringify(
       body,
     )}`;
 
