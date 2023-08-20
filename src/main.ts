@@ -7,6 +7,7 @@ import { SwaggerModule } from '@nestjs/swagger';
 import { readFile } from 'fs/promises';
 import { parse } from 'yaml';
 import { CustomLogger } from './logger/custom-logger.service';
+import { EOL } from 'os';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,9 +18,19 @@ async function bootstrap() {
   SwaggerModule.setup('doc', app, parse(document));
 
   app.enableCors();
-  app.useLogger(app.get(CustomLogger));
+  const logger = app.get(CustomLogger);
+  app.useLogger(logger);
 
   await app.listen(process.env.PORT);
+
+  process.on('uncaughtException', (error, origin) => {
+    logger.error(`Error: ${error.message} origin: ${origin}`);
+    process.exit(1);
+  });
+
+  process.on('unhandledRejection', (reason) => {
+    logger.error(`unhandledRejection: ${reason}`);
+  });
 }
 
 bootstrap();
