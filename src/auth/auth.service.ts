@@ -35,7 +35,16 @@ export class AuthService {
       if (passwordsEquals) {
         const { id, login } = user;
         const tokens = await this.generateTokens(id, login);
-        console.log(tokens);
+
+        await this.prisma.user.update({
+          where: {
+            id: user.id,
+          },
+          data: {
+            refreshToken: tokens.refreshToken,
+          },
+        });
+
         return tokens;
       }
     }
