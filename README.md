@@ -5,68 +5,56 @@
 - Git - [Download & Install Git](https://git-scm.com/downloads).
 - Node.js - [Download & Install Node.js](https://nodejs.org/en/download/) and the npm package manager.
 
+Command (docker scan) won't work if you are using latest docker ver. My docker version is 4.4 and this command works well. Sorry for this!  
+
+I forgotten to do it myself. Thanks for understanding!
+
 ## Downloading
 
 ```
-git clone {repository URL}
+git clone https://github.com/labatsevich/nodejs2023Q2-service.git
 ```
 
-## Installing NPM modules
+## Change branche
 
 ```
-npm install
+git checkout logger_and_auth
 ```
 
-## Running application
+## Using .env file
 
 ```
-npm start
+rename .env.example to .env
 ```
 
+## Build images
+
+```
+npm run docker:build
+```
+
+## Starting container
+
+This command starts one by one command docker-compose up, npx prisma migrate dev --name init & nest start --watch
+
+```
+npm run docker:up
+```
 After starting the app on port (4000 as default) you can open
 in your browser OpenAPI documentation by typing http://localhost:4000/doc/.
-For more information about OpenAPI/Swagger please visit https://swagger.io/.
 
+## Authentication
+
+```
+/auth/signup - creane new user
+```
+```
+/auth/login - to get access_token. After, copy it and use for testing api
+```
 ## Testing
 
-After application running open new terminal and enter:
-
-To run all tests without authorization
-
-```
-npm run test
-```
-
-To run only one of all test suites
-
-```
-npm run test -- <path to suite>
-```
-
-To run all test with authorization
+After application running and you  open new terminal and enter:
 
 ```
 npm run test:auth
 ```
-
-To run only specific test suite with authorization
-
-```
-npm run test:auth -- <path to suite>
-```
-
-### Auto-fix and format
-
-```
-npm run lint
-```
-
-```
-npm run format
-```
-
-### Debugging in VSCode
-
-Press <kbd>F5</kbd> to debug.
-
-For more information, visit: https://code.visualstudio.com/docs/editor/debugging
