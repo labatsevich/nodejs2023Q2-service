@@ -7,7 +7,6 @@ import { SwaggerModule } from '@nestjs/swagger';
 import { readFile } from 'fs/promises';
 import { parse } from 'yaml';
 import { CustomLogger } from './logger/custom-logger.service';
-import { EOL } from 'os';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

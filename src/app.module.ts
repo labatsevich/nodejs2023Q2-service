@@ -13,10 +13,10 @@ import { LoggerModule } from './logger/custom-logger.module';
 import { APP_FILTER } from '@nestjs/core';
 import { CustomExceptionFilter } from './common/filters/custom-exception.filter';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
-    LoggerModule,
     UsersModule,
     StorageModule,
     ArtistsModule,
@@ -25,6 +25,8 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
     FavoritesModule,
     EventEmitterModule.forRoot(),
     PrismaModule,
+    AuthModule,
+    LoggerModule,
   ],
   controllers: [AppController],
   providers: [
