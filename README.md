@@ -5,20 +5,6 @@
 - Git - [Download & Install Git](https://git-scm.com/downloads).
 - Node.js - [Download & Install Node.js](https://nodejs.org/en/download/) and the npm package manager.
 
-## Warning, Achtung
-
-For those who will being check my work! Please change
-    depends_on:
-        - db
-        to  
-        depends-on:
-        -postgres.
-
-**docker-compose.yaml should look like this**
-
-![docker-compose](https://github.com/labatsevich/nodejs2023Q2-service/assets/87633079/21984e67-c525-4b9e-bab8-0cb18eeb023c)
-
-
 Command (docker scan) won't work if you are using latest docker ver. My docker version is 4.4 and this command works well. Sorry for this!  
 
 I forgotten to do it myself. Thanks for understanding!
@@ -32,7 +18,7 @@ git clone https://github.com/labatsevich/nodejs2023Q2-service.git
 ## Change branche
 
 ```
-git checkout containerization
+git checkout logger_and_auth
 ```
 
 ## Using .env file
@@ -57,14 +43,18 @@ npm run docker:up
 After starting the app on port (4000 as default) you can open
 in your browser OpenAPI documentation by typing http://localhost:4000/doc/.
 
-## Running vulnerabilities scanning
-
-npm run scan:app
-npm run scan:db
-## Testing
-
-After application running open new terminal and enter:
+## Authentication
 
 ```
-npm run test
+/auth/signup - creane new user
+```
+```
+/auth/login - to get access_token. After, copy it and use for testing api
+```
+## Testing
+
+After application running and you  open new terminal and enter:
+
+```
+npm run test:auth
 ```
