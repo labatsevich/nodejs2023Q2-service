@@ -15,6 +15,7 @@ model User {
   version   Int
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+  refreshToken String?
   Favorite  Favorite[]
 
   @@map("users")

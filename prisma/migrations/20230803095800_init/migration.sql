@@ -67,3 +67,6 @@ ALTER TABLE "tracks" ADD CONSTRAINT "tracks_albumId_fkey" FOREIGN KEY ("albumId"
 
 -- AddForeignKey
 ALTER TABLE "favorites" ADD CONSTRAINT "favorites_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AlterTable
+ALTER TABLE "users" ADD COLUMN  "refreshToken" TEXT;
